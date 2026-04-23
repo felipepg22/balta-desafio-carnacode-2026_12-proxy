@@ -1,28 +1,66 @@
 ![ES-7](https://github.com/user-attachments/assets/61d1998c-69c4-484e-a6d8-7c84b03357b9)
 
-## 🥁 CarnaCode 2026 - Desafio 12 - Proxy
+## 🥁 CarnaCode 2026 - Challenge 12 - Proxy
 
-Oi, eu sou o [seu nome aqui] e este é o espaço onde compartilho minha jornada de aprendizado durante o desafio **CarnaCode 2026**, realizado pelo [balta.io](https://balta.io). 👻
+Hi, I’m Felipe Parizzi Galli, and this is the place where I share my learning journey during the **CarnaCode 2026** challenge, organized by [balta.io](https://balta.io). 👻
 
-Aqui você vai encontrar projetos, exercícios e códigos que estou desenvolvendo durante o desafio. O objetivo é colocar a mão na massa, testar ideias e registrar minha evolução no mundo da tecnologia.
+Here you’ll find projects, exercises, and code I’m building throughout the challenge. The goal is to get hands-on, test ideas, and document my growth in the tech world.
 
-### Sobre este desafio
-No desafio **Flyweight** eu tive que resolver um problema real implementando o **Design Pattern** em questão.
-Neste processo eu aprendi:
-* ✅ Boas Práticas de Software
-* ✅ Código Limpo
+### About this challenge
+In the **Proxy** challenge, I had to solve a real-world problem by implementing the corresponding **Design Pattern**.
+During this process, I learned:
+* ✅ Software Best Practices
+* ✅ Clean Code
 * ✅ SOLID
-* ✅ Design Patterns (Padrões de Projeto)
+* ✅ Design Patterns
 
-## Problema
-Uma aplicação corporativa precisa controlar acesso a documentos sensíveis, fazer cache de documentos pesados e registrar todas as operações. 
-O código atual mistura lógica de negócio com controle de acesso, cache e logging.
+## Problem
+A corporate application needs to control access to sensitive documents, cache heavy documents, and log all operations.  
+The current code mixes business logic with access control, caching, and logging.
 
-## Sobre o CarnaCode 2026
-O desafio **CarnaCode 2026** consiste em implementar todos os 23 padrões de projeto (Design Patterns) em cenários reais. Durante os 23 desafios desta jornada, os participantes são submetidos ao aprendizado e prática na idetinficação de códigos não escaláveis e na solução de problemas utilizando padrões de mercado.
+## About CarnaCode 2026
+The **CarnaCode 2026** challenge consists of implementing all 23 design patterns in real-world scenarios. Throughout the 23 challenges in this journey, participants are exposed to learning and practicing how to identify non-scalable code and solve problems using industry-standard patterns.
 
-### eBook - Fundamentos dos Design Patterns
-Minha principal fonte de conhecimento durante o desafio foi o eBook gratuito [Fundamentos dos Design Patterns](https://lp.balta.io/ebook-fundamentos-design-patterns).
+### eBook - Design Pattern Fundamentals
+My main source of knowledge during the challenge was the free eBook [Design Pattern Fundamentals](https://lp.balta.io/ebook-fundamentos-design-patterns).
 
-### Veja meu progresso no desafio
-[Incluir link para o repositório central]
+## What was implemented to apply the Proxy Pattern
+In this codebase, the Proxy pattern was implemented by wrapping the real document service with multiple proxy layers, each adding one cross-cutting concern without changing the core business logic.
+
+### 1) Common contract for real service and proxies
+- `IDocumentService` defines the operations: `ViewDocument`, `EditDocument`, and `ShowAuditLog`.
+- Both the real service and all proxies implement this same interface.
+
+### 2) Real subject (core business logic)
+- `DocumentService` is the real service responsible for retrieving and updating documents.
+- It delegates persistence to `DocumentRepository`.
+- The repository is created lazily (`Lazy<DocumentRepository>`), so initialization only happens when needed.
+
+### 3) Base proxy abstraction
+- `DocumentServiceProxyBase` receives an `IDocumentService` (`innerDocumentService`) and forwards calls by default.
+- Specialized proxies inherit from this base class and override only the behavior they need.
+
+### 4) Specialized proxies
+- `AuthorizationDocumentServiceProxy`
+  - Checks user clearance level against document security level.
+  - Blocks unauthorized view/edit operations.
+- `CachingDocumentServiceProxy`
+  - Caches documents by ID on first read.
+  - Returns cached results on subsequent reads.
+  - Invalidates cache on edit.
+- `AuditDocumentServiceProxy`
+  - Records audit entries for access/edit attempts and outcomes.
+  - Exposes a consolidated audit log via `ShowAuditLog()`.
+
+### 5) Proxy composition (decorated chain)
+In `Challenge.cs`, the service is composed as:
+
+`Audit -> Authorization -> Caching -> DocumentService`
+
+This allows stacking responsibilities (audit, authorization, caching) while keeping `DocumentService` focused on document operations.
+
+### 6) Practical result
+- Separation of concerns
+- Easier extensibility (new behaviors can be added as new proxies)
+- Less duplication of cross-cutting code
+- Better maintainability and testability
