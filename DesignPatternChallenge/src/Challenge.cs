@@ -1,4 +1,6 @@
 using System;
+using DesignPatternChallenge.src.Interfaces;
+using DesignPatternChallenge.src.Proxies;
 
 namespace DesignPatternChallenge;
 
@@ -8,7 +10,11 @@ internal class Challenge
     {
         Console.WriteLine("=== Sistema de Documentos Confidenciais ===\n");
 
-        var service = new DocumentService();
+        IDocumentService service =
+            new AuditDocumentServiceProxy(
+                new AuthorizationDocumentServiceProxy(
+                    new CachingDocumentServiceProxy(
+                        new DocumentService())));
 
         var manager = new User("joao.silva", 5);
         var employee = new User("maria.santos", 2);
